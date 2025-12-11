@@ -5,6 +5,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
+
 
 builder.Services.AddDbContext<ClassifieldsContext>(options =>
     options.UseSqlServer("server=DESKTOP-5CVM6RG\\SQLEXPRESS01;Database=ClassifieldsContext;Trusted_Connection=True;TrustServerCertificate=True")
@@ -12,6 +22,13 @@ builder.Services.AddDbContext<ClassifieldsContext>(options =>
 
 
 var app = builder.Build();
+app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

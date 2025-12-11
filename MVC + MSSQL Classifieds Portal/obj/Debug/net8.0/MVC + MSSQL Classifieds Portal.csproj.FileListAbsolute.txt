@@ -166,3 +166,9 @@ D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL C
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.pdb
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.genruntimeconfig.cache
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\ref\MVC + MSSQL Classifieds Portal.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\Microsoft.OpenApi.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.MvcApplicationPartsAssemblyInfo.cs
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.sourcelink.json

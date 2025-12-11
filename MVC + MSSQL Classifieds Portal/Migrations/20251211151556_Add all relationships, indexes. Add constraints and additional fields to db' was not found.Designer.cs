@@ -4,6 +4,7 @@ using MVC___MSSQL_Classifieds_Portal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MVC___MSSQL_Classifieds_Portal.Migrations
 {
     [DbContext(typeof(ClassifieldsContext))]
-    partial class ClassifieldsContextModelSnapshot : ModelSnapshot
+    [Migration("20251211151556_Add all relationships, indexes. Add constraints and additional fields to db' was not found")]
+    partial class AddallrelationshipsindexesAddconstraintsandadditionalfieldstodbwasnotfound
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +47,10 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -52,6 +58,8 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
                     b.HasIndex("Timestamp");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("AuditLogs");
                 });
@@ -113,7 +121,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,4)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -177,10 +185,13 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
             modelBuilder.Entity("MVC___MSSQL_Classifieds_Portal.Models.AuditLog", b =>
                 {
                     b.HasOne("MVC___MSSQL_Classifieds_Portal.Models.User", "User")
-                        .WithMany("AuditLogs")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MVC___MSSQL_Classifieds_Portal.Models.User", null)
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
