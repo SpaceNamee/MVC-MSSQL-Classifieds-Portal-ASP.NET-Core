@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MVC___MSSQL_Classifieds_Portal.Models;
@@ -9,6 +10,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -92,6 +99,8 @@ using (var scope = app.Services.CreateScope())
         context.AuditLogs.Add(log);
         context.SaveChanges();
     }
+
+    // ---- Print data to console ----
     var users = context.Users.ToList();
     var listings = context.Listings.Include(l => l.User).Include(l => l.Category).ToList();
 

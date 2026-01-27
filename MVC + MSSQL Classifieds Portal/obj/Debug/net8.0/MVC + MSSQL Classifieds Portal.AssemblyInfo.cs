@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MVC + MSSQL Classifieds Portal")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10952f836bc2cea1c0c6ad264e64df58fca8ea37")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10688dd74a280e2c254d1a4edd923e5a6b1b0360")]
 [assembly: System.Reflection.AssemblyProductAttribute("MVC + MSSQL Classifieds Portal")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MVC + MSSQL Classifieds Portal")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

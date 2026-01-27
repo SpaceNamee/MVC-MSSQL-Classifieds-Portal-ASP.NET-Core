@@ -152,11 +152,6 @@ D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL C
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.RazorAssemblyInfo.cs
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets.build.json
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets.development.json
-D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets\msbuild.MVC + MSSQL Classifieds Portal.Microsoft.AspNetCore.StaticWebAssets.props
-D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets\msbuild.build.MVC + MSSQL Classifieds Portal.props
-D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.MVC + MSSQL Classifieds Portal.props
-D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.MVC + MSSQL Classifieds Portal.props
-D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets.pack.json
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\scopedcss\bundle\MVC + MSSQL Classifieds Portal.styles.css
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\scopedcss\projectbundle\MVC + MSSQL Classifieds Portal.bundle.scp.css
@@ -172,3 +167,12 @@ D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL C
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.MvcApplicationPartsAssemblyInfo.cs
 D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\MVC + MSSQL Classifieds Portal.sourcelink.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\MVC + MSSQL Classifieds Portal.staticwebassets.endpoints.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\rjimswa.dswa.cache.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets.build.json.cache
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\AutoMapper.dll
+D:\3course\Erasmus studying\Internet Databases Applocation\Project\MVC + MSSQL Classifieds Portal\MVC + MSSQL Classifieds Portal\bin\Debug\net8.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
