@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MVC___MSSQL_Classifieds_Portal.Models;
@@ -11,6 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Configure Cookie Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    });
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -25,7 +37,7 @@ builder.Services.AddControllers()
 
 
 builder.Services.AddDbContext<ClassifieldsContext>(options =>
-    options.UseSqlServer("server=DESKTOP-5CVM6RG\\SQLEXPRESS01;Database=ClassifieldsContext;Trusted_Connection=True;TrustServerCertificate=True")
+    options.UseSqlServer("server=(localdb)\\mssqllocaldb;Database=ClassifieldsContext;Trusted_Connection=True;TrustServerCertificate=True")
 );
 
 
@@ -69,19 +81,118 @@ using (var scope = app.Services.CreateScope())
     // ---- Add Listings ----
     if (!context.Listings.Any())
     {
-        var user = context.Users.First(u => u.Username == "alice");
-        var category = context.Categories.First(c => c.Name == "Electronics");
+        var alice = context.Users.First(u => u.Username == "alice");
+        var bob = context.Users.First(u => u.Username == "bob");
+        var electronics = context.Categories.First(c => c.Name == "Electronics");
+        var furniture = context.Categories.First(c => c.Name == "Furniture");
 
-        var listing1 = new Listing
+        var listings = new List<Listing>
         {
-            Title = "iPhone 14",
-            Description = "Like new, 256GB",
-            Price = 799.99m,
-            UserId = user.Id,
-            CategoryId = category.Id,
-            ImageUrl = "https://example.com/iphone14.jpg"
+            // Alice's listings
+            new Listing
+            {
+                Title = "iPhone 14",
+                Description = "Like new, 256GB, mint condition",
+                Price = 799.99m,
+                UserId = alice.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/iphone14.jpg"
+            },
+            new Listing
+            {
+                Title = "MacBook Pro 14\"",
+                Description = "M2 Max, 16GB RAM, 512GB SSD, 2022 model",
+                Price = 1899.50m,
+                UserId = alice.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/macbook.jpg"
+            },
+            new Listing
+            {
+                Title = "AirPods Pro",
+                Description = "Active noise cancellation, original box",
+                Price = 199.99m,
+                UserId = alice.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/airpods.jpg"
+            },
+            new Listing
+            {
+                Title = "Leather Sofa",
+                Description = "Brown leather, 3-seater, very comfortable",
+                Price = 1200.00m,
+                UserId = alice.Id,
+                CategoryId = furniture.Id,
+                ImageUrl = "https://example.com/sofa.jpg"
+            },
+            new Listing
+            {
+                Title = "Dining Table Set",
+                Description = "Wooden table with 6 chairs, perfect condition",
+                Price = 450.00m,
+                UserId = alice.Id,
+                CategoryId = furniture.Id,
+                ImageUrl = "https://example.com/dining.jpg"
+            },
+            
+            // Bob's listings
+            new Listing
+            {
+                Title = "Samsung Galaxy S23",
+                Description = "Phantom Black, 256GB, like new",
+                Price = 699.99m,
+                UserId = bob.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/galaxy.jpg"
+            },
+            new Listing
+            {
+                Title = "iPad Air 5th Gen",
+                Description = "64GB, Space Gray, with Apple Pencil",
+                Price = 549.99m,
+                UserId = bob.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/ipad.jpg"
+            },
+            new Listing
+            {
+                Title = "Gaming Laptop - ASUS",
+                Description = "RTX 4070, i9, 32GB RAM, 1TB SSD, excellent gaming performance",
+                Price = 1599.00m,
+                UserId = bob.Id,
+                CategoryId = electronics.Id,
+                ImageUrl = "https://example.com/asus.jpg"
+            },
+            new Listing
+            {
+                Title = "Office Chair",
+                Description = "Ergonomic gaming chair, adjustable, black",
+                Price = 299.99m,
+                UserId = bob.Id,
+                CategoryId = furniture.Id,
+                ImageUrl = "https://example.com/chair.jpg"
+            },
+            new Listing
+            {
+                Title = "Standing Desk",
+                Description = "Electric, oak finish, 48x24 inches",
+                Price = 599.00m,
+                UserId = bob.Id,
+                CategoryId = furniture.Id,
+                ImageUrl = "https://example.com/desk.jpg"
+            },
+            new Listing
+            {
+                Title = "Bookshelf 5-Tier",
+                Description = "Walnut wood, sturdy, holds lots of books",
+                Price = 129.99m,
+                UserId = bob.Id,
+                CategoryId = furniture.Id,
+                ImageUrl = "https://example.com/bookshelf.jpg"
+            }
         };
-        context.Listings.Add(listing1);
+
+        context.Listings.AddRange(listings);
         context.SaveChanges();
     }
 
@@ -102,12 +213,12 @@ using (var scope = app.Services.CreateScope())
 
     // ---- Print data to console ----
     var users = context.Users.ToList();
-    var listings = context.Listings.Include(l => l.User).Include(l => l.Category).ToList();
+    var allListings = context.Listings.Include(l => l.User).Include(l => l.Category).ToList();
 
     foreach (var user in users)
         Console.WriteLine($"User: {user.Username}, Email: {user.Email}");
 
-    foreach (var listing in listings)
+    foreach (var listing in allListings)
         Console.WriteLine($"Listing: {listing.Title}, Price: {listing.Price}, Owner: {listing.User.Username}");
 }
 
@@ -133,8 +244,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Authentication middleware MUST come BEFORE Routing and Authorization
+app.UseAuthentication();
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(

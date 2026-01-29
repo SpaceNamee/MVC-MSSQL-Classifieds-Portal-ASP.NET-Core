@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MVC___MSSQL_Classifieds_Portal.Models;
 using MVC___MSSQL_Classifieds_Portal.Models.ViewModels;
+using System.Security.Claims;
 
 
 namespace MVC___MSSQL_Classifieds_Portal.Controllers
@@ -20,15 +22,80 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             _mapper = mapper;
         }
 
-        // =================== READ: List all listings ===================
+        // =================== READ: List all listings with filtering & pagination ===================
         // GET: Listings
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? searchTitle,
+            int? categoryId,
+            decimal? minPrice,
+            decimal? maxPrice,
+            string? sortBy,
+            int page = 1)
         {
-            // Include() is LINQ - it loads realted data (Category, User)
-            // This is called "Eager Loading"
-            var listings = await _context.Listings.Include(l => l.Category).Include(l => l.User).ToListAsync();
+            const int pageSize = 10;
+            
+            // Start with base query - Include() loads related data (Category, User) - "Eager Loading"
+            IQueryable<Listing> query = _context.Listings
+                .Where(l => l.IsActive)
+                .Include(l => l.Category)
+                .Include(l => l.User);
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(searchTitle))
+            {
+                query = query.Where(l => l.Title.Contains(searchTitle));
+            }
+
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(l => l.CategoryId == categoryId);
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(l => l.Price >= minPrice);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(l => l.Price <= maxPrice);
+            }
+
+            // Apply sorting
+            query = sortBy switch
+            {
+                "price_asc" => query.OrderBy(l => l.Price),
+                "price_desc" => query.OrderByDescending(l => l.Price),
+                _ => query.OrderByDescending(l => l.CreatedAt) // default: newest first
+            };
+
+            // Get total count before pagination
+            var totalListings = await query.CountAsync();
+
+            // Apply pagination
+            var listings = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
             var viewModels = _mapper.Map<List<ListingViewModel>>(listings);
-            return View(viewModels);
+            var categories = await _context.Categories.ToListAsync();
+
+            var filterViewModel = new ListingFilterViewModel
+            {
+                Listings = viewModels,
+                TotalListings = totalListings,
+                CurrentPage = page,
+                PageSize = pageSize,
+                SearchTitle = searchTitle,
+                CategoryId = categoryId,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                SortBy = sortBy ?? "newest",
+                Categories = categories
+            };
+
+            return View(filterViewModel);
         }
 
         // =================== READ: Single listing details ===================
@@ -54,7 +121,8 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         }
 
         // =================== CREATE: Show empty form ===================
-        // GET: Listings/Details/5
+        // GET: Listings/Create
+        [Authorize]
         public IActionResult Create()
         {
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
@@ -88,6 +156,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
 
         // =================== UPDATE: Show form with existing data ===================
         // GET: Listings/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) { return NotFound(); }
@@ -95,6 +164,13 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             var listing = await _context.Listings.FindAsync(id);
 
             if (listing == null) { return NotFound(); }
+
+            // Check if current user is the owner
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (listing.UserId != userId)
+            {
+                return Forbid();
+            }
 
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Username", listing.UserId);
@@ -106,11 +182,19 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         // POST: Listings/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Descriptions,Price,CategoryId,UserId,CreatedAt,IsActive")] Listing listing)
+        [Authorize]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Price,CategoryId,UserId,CreatedAt,IsActive,ImageUrl")] Listing listing)
         {
             if (id != listing.Id)
             {
                 return NotFound();
+            }
+
+            // Check if current user is the owner
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (listing.UserId != userId)
+            {
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -145,6 +229,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
 
         // ========== DELETE: Show confirmation page ==========
         // GET: Listings/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -160,6 +245,13 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             if (listing == null)
             {
                 return NotFound();
+            }
+
+            // Check if current user is the owner
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (listing.UserId != userId)
+            {
+                return Forbid();
             }
 
             return View(listing);

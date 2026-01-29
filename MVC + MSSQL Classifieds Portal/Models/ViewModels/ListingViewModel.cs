@@ -9,6 +9,9 @@ namespace MVC___MSSQL_Classifieds_Portal.Models.ViewModels
         public decimal Price { get; set; }
         public string CategoryName { get; set; }
         public string OwnerUsername { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Category Category { get; set; }
+        public User User { get; set; }
     }
 
     public class ListingCreateViewModel
@@ -29,5 +32,9 @@ namespace MVC___MSSQL_Classifieds_Portal.Models.ViewModels
 
         [Required]
         public int UserId { get; set; }
+
+        [Url(ErrorMessage = "Please enter a valid URL")]
+        [StringLength(255)]
+        public string? ImageUrl { get; set; }
     }
 }
