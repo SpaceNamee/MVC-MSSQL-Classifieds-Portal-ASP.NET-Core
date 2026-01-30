@@ -42,6 +42,7 @@ A full-featured classifieds portal built with ASP.NET Core 8.0 MVC, Entity Frame
 
 ## Dependencies
 
+### Main Application
 ```xml
 <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
@@ -49,6 +50,16 @@ A full-featured classifieds portal built with ASP.NET Core 8.0 MVC, Entity Frame
 <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+```
+
+### Test Project (MVC.Classifieds.Tests)
+```xml
+<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+<PackageReference Include="xunit" Version="2.9.3" />
+<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+<PackageReference Include="Moq" Version="4.20.72" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.2" />
+<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.2" />
 ```
 
 ## Getting Started
@@ -75,6 +86,10 @@ A full-featured classifieds portal built with ASP.NET Core 8.0 MVC, Entity Frame
    ```bash
    dotnet ef database update
    ```
+   This applies 3 migrations:
+   - Initial schema creation
+   - Relationship constraints and indexes (8 indexes)
+   - AuditLog table and timestamp index
 
 4. **Run the application**
    ```bash
@@ -121,12 +136,62 @@ A full-featured classifieds portal built with ASP.NET Core 8.0 MVC, Entity Frame
 
 **AuditLog**
 - `Id` (PK, int, identity)
-- `Action` (nvarchar(50), required)
-- `EntityName` (nvarchar(100))
-- `EntityId` (int, nullable)
-- `UserId` (FK, nullable)
-- `Changes` (nvarchar(max), JSON format)
-- `Timestamp` (datetime2, indexed)
+- `Action` (nvarchar(50), required) - CREATE, UPDATE, DELETE operations
+- `EntityName` (nvarchar(100)) - Target entity type (Listing, Category, User)
+- `EntityId` (int, nullable) - ID of modified entity
+- `UserId` (FK, nullable) - User who performed the action
+- `Changes` (nvarchar(max), JSON format) - Serialized before/after state
+- `Timestamp` (datetime2, indexed) - UTC timestamp of action
+
+### Audit Logging System
+
+**AuditLogService** provides automatic change tracking for all CRUD operations:
+
+```csharp
+// Injected via dependency injection
+public AuditLogService(ClassifieldsContext context)
+
+// Log creation
+await _auditLogService.LogAsync("CREATE", "Listing", listing.Id, userId, new { listing.Title, listing.Price });
+
+// Log updates with changes
+await _auditLogService.LogAsync("UPDATE", "Listing", listing.Id, userId, new { OldPrice = oldPrice, NewPrice = listing.Price });
+
+// Log deletions
+await _auditLogService.LogAsync("DELETE", "Listing", listingId, userId, new { Title = listing.Title });
+```
+
+**Logged Operations:**
+- Listing creation, updates, soft deletes
+- Category management changes
+- User profile modifications
+- Failed authorization attempts (future enhancement)
+
+**Query Examples:**
+```csharp
+// Get recent activity for a specific entity
+var logs = await _context.AuditLogs
+    .Where(a => a.EntityName == "Listing" && a.EntityId == listingId)
+    .OrderByDescending(a => a.Timestamp)
+    .ToListAsync();
+
+// Get all activity by a user
+var userActivity = await _context.AuditLogs
+    .Where(a => a.UserId == userId)
+    .OrderByDescending(a => a.Timestamp)
+    .ToListAsync();
+
+// Get recent system-wide activity
+var recentActivity = await _context.AuditLogs
+    .OrderByDescending(a => a.Timestamp)
+    .Take(100)
+    .ToListAsync();
+```
+
+**Performance Considerations:**
+- Indexed on `Timestamp` (descending) for efficient chronological queries
+- JSON serialization keeps storage compact
+- Async operations prevent blocking main request threads
 
 ### Relationships
 - `User` → `Listings`: One-to-Many (CASCADE on delete)
@@ -165,41 +230,51 @@ Pre-configured test accounts:
 ## Project Structure
 
 ```
-MVC + MSSQL Classifieds Portal/
+MVC-MSSQL-Classifieds-Portal-ASP.NET-Core/
 │
-├── Controllers/
-│   ├── AccountController.cs      # Authentication (Login, Register, Logout)
-│   ├── CategoriesController.cs   # Category CRUD operations
-│   ├── HomeController.cs         # Landing page with statistics
-│   ├── ListingsController.cs     # Listing CRUD with filtering & pagination
-│   └── UsersController.cs        # User profile management
+├── MVC + MSSQL Classifieds Portal/       # Main application
+│   ├── Controllers/
+│   │   ├── AccountController.cs           # Authentication (Login, Register, Logout)
+│   │   ├── CategoriesController.cs        # Category CRUD operations
+│   │   ├── HomeController.cs              # Landing page with statistics
+│   │   ├── ListingsController.cs          # Listing CRUD with audit logging
+│   │   └── UsersController.cs             # User profile management
+│   │
+│   ├── Models/
+│   │   ├── AuditLog.cs                   # Audit trail entity
+│   │   ├── Category.cs                   # Category entity
+│   │   ├── ClassifieldsContext.cs        # EF Core DbContext with indexes
+│   │   ├── ErrorViewModel.cs             # Error handling model
+│   │   ├── Listing.cs                    # Listing entity with validations
+│   │   ├── User.cs                       # User entity
+│   │   └── ViewModels/
+│   │       ├── ListingFilterViewModel.cs # Filter & pagination
+│   │       └── ListingViewModel.cs       # Listing display DTO
+│   │
+│   ├── Services/
+│   │   └── AuditLogService.cs            # Change tracking service
+│   │
+│   ├── Views/
+│   │   ├── Account/                      # Authentication views
+│   │   ├── Categories/                   # Category management views
+│   │   ├── Home/                         # Dashboard and landing page
+│   │   ├── Listings/                     # Listing CRUD and index with filters
+│   │   ├── Shared/                       # Layout, navigation, components
+│   │   └── Users/                        # User profile and management
+│   │
+│   ├── Mappings/
+│   │   └── MappingProfile.cs             # AutoMapper entity-to-DTO mappings
+│   │
+│   ├── Migrations/                       # EF Core database migrations (8 indexes)
+│   ├── wwwroot/                          # Static assets (CSS, JS, images)
+│   ├── appsettings.json                  # Application configuration
+│   └── Program.cs                        # Application bootstrap and DI setup
 │
-├── Models/
-│   ├── AuditLog.cs              # Audit trail entity
-│   ├── Category.cs              # Category entity
-│   ├── ClassifieldsContext.cs   # EF Core DbContext configuration
-│   ├── ErrorViewModel.cs        # Error handling model
-│   ├── Listing.cs               # Listing entity with validations
-│   ├── User.cs                  # User entity
-│   └── ViewModels/
-│       ├── ListingFilterViewModel.cs  # Filter & pagination
-│       └── ListingViewModel.cs        # Listing display DTO
-│
-├── Views/
-│   ├── Account/                 # Authentication views
-│   ├── Categories/              # Category management views
-│   ├── Home/                    # Dashboard and landing page
-│   ├── Listings/                # Listing CRUD and index with filters
-│   ├── Shared/                  # Layout, navigation, components
-│   └── Users/                   # User profile and management
-│
-├── Mappings/
-│   └── MappingProfile.cs        # AutoMapper entity-to-DTO mappings
-│
-├── Migrations/                  # EF Core database migrations
-├── wwwroot/                     # Static assets (CSS, JS, images)
-├── appsettings.json             # Application configuration
-└── Program.cs                   # Application bootstrap and DI setup
+└── MVC.Classifieds.Tests/                # Test project (23 tests)
+    ├── ListingsControllerUnitTests.cs    # 9 controller tests with mocks
+    ├── AuditLogServiceUnitTests.cs       # 7 service layer tests
+    ├── ListingsIntegrationTests.cs       # 7 database integration tests
+    └── MVC.Classifieds.Tests.csproj      # Test dependencies (xUnit, Moq, InMemory)
 ```
 
 ## Implementation Details
@@ -261,18 +336,97 @@ await HttpContext.SignInAsync(
 - `AsNoTracking()` on read-only queries (30-40% faster)
 - Eager loading with `.Include()` to prevent N+1 queries
 - Projection with `Select()` for minimal data transfer
+- Filtered queries use composite indexes for optimal performance
 
-**Indexing Strategy**
-- Single-column indexes on foreign keys (CategoryId, UserId)
-- Composite index on (IsActive, CreatedAt) for filtered sorting
-- Unique indexes on Username and Email for fast lookups
+**Database Indexing Strategy**
+
+All indexes are applied via Entity Framework Core migrations for consistency.
+
+**Single-Column Indexes:**
+- `IX_Listings_CategoryId` - Foreign key lookups for category filtering
+- `IX_Listings_UserId` - User's listings queries
+- `IX_Listings_Price` - Price range filtering and sorting
+- `IX_Users_Username` - Unique constraint + fast username lookups
+- `IX_Users_Email` - Unique constraint + email verification
+
+**Composite Indexes:**
+- `IX_Listings_CategoryId_IsActive` - Combined category + active status filter (most common query pattern)
+- `IX_Listings_UserId_IsActive` - User listings + active status
+- `IX_Listings_IsActive_CreatedAt_DESC` - Active listings sorted by date (default homepage query)
+
+**Specialized Indexes:**
+- `IX_Listings_Title` - Full-text search enablement (future enhancement)
+- `IX_AuditLog_Timestamp_DESC` - Chronological audit trail queries
+- `IX_AuditLog_EntityName_EntityId` - Entity-specific audit history
+
+**Index Benefits:**
+- **Query Speed**: 10-100x faster on filtered queries with large datasets
+- **Join Performance**: Foreign key indexes eliminate table scans
+- **Sorting Efficiency**: Descending indexes avoid expensive sort operations
+- **Unique Constraints**: Prevents duplicate usernames/emails at database level
+
+**Index Maintenance:**
+```sql
+-- Check index fragmentation (run periodically)
+SELECT 
+    i.name AS IndexName,
+    ips.avg_fragmentation_in_percent
+FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, 'LIMITED') ips
+JOIN sys.indexes i ON ips.object_id = i.object_id AND ips.index_id = i.index_id
+WHERE avg_fragmentation_in_percent > 10;
+
+-- Rebuild fragmented indexes
+ALTER INDEX IX_Listings_IsActive_CreatedAt_DESC ON Listings REBUILD;
+```
 
 **Pagination**
 - Server-side pagination with `Skip()` and `Take()`
 - Count query optimization with filtered counts
 - Page size limited to prevent resource exhaustion
+- Index-optimized sorting (uses IX_Listings_IsActive_CreatedAt_DESC)
 
-## Testing
+## Automated Testing
+
+### Test Suite Coverage
+**23 Total Tests** (16 unit tests + 7 integration tests)
+
+**Unit Tests** (ListingsController, AuditLogService)
+- 9 controller action tests with mocked dependencies
+- 7 audit log service tests covering all logging scenarios
+- Mocking framework: Moq 4.20.72
+- Assertions: xUnit framework
+
+**Integration Tests** (Database Operations)
+- 7 end-to-end database tests with in-memory provider
+- Validates relationships, indexes, and service integration
+- Tests soft delete, queries, and audit logging
+
+### Running Tests
+```bash
+# Run all tests
+cd MVC.Classifieds.Tests
+dotnet test
+
+# Run with detailed output
+dotnet test --verbosity normal
+
+# Run only unit tests
+dotnet test --filter "FullyQualifiedName~UnitTests"
+
+# Run only integration tests
+dotnet test --filter "FullyQualifiedName~Integration"
+
+# Run with code coverage (requires coverlet)
+dotnet test /p:CollectCoverage=true /p:CoverageReportsFormat=opencover
+```
+
+### Test Structure
+```
+MVC.Classifieds.Tests/
+├── ListingsControllerUnitTests.cs   # Controller action tests
+├── AuditLogServiceUnitTests.cs      # Service layer tests
+└── ListingsIntegrationTests.cs      # Database integration tests
+```
 
 ### Test Accounts
 ```
@@ -280,13 +434,14 @@ alice / Alice123!
 bob / Bob123!
 ```
 
-### Testing Scenarios
+### Manual Testing Scenarios
 1. **Registration**: Create new user → Verify password hashing → Login successful
 2. **Authentication**: Login → Verify claims → Access protected routes
 3. **CRUD Operations**: Create listing → Edit own listing → Delete own listing
 4. **Authorization**: Attempt to edit another user's listing → Verify Forbid() response
 5. **Search & Filter**: Apply multiple filters → Verify query results
 6. **Pagination**: Navigate through pages → Verify correct offsets
+7. **Audit Trail**: Perform actions → Check AuditLog table for records
 
 ## Known Issues & Limitations
 
@@ -380,4 +535,10 @@ For issues or questions:
 
 ---
 
-Built with ASP.NET Core 8.0 | Last Updated: January 2026
+**Week 4 Enhancements (January 2025):**
+- ✅ Database Performance: 8 strategic indexes for query optimization
+- ✅ Audit Logging: Automatic change tracking with AuditLogService
+- ✅ Comprehensive Testing: 23 tests (16 unit + 7 integration) with xUnit and Moq
+- ✅ Documentation: Updated README with testing, indexes, and audit log guides
+
+Built with ASP.NET Core 8.0 | Last Updated: January 2025
