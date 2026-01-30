@@ -32,15 +32,32 @@ namespace MVC___MSSQL_Classifieds_Portal.Models
                 .HasIndex(c => c.Name)
                 .IsUnique();
 
+            // Listing indexes for filtering and sorting
             modelBuilder.Entity<Listing>()
-                .HasIndex(l => new { l.CategoryId, l.Price });
+                .HasIndex(l => new { l.CategoryId, l.IsActive });
+
+            modelBuilder.Entity<Listing>()
+                .HasIndex(l => new { l.UserId, l.IsActive });
+
+            modelBuilder.Entity<Listing>()
+                .HasIndex(l => l.Price);
+
+            modelBuilder.Entity<Listing>()
+                .HasIndex(l => l.CreatedAt);
+
+            modelBuilder.Entity<Listing>()
+                .HasIndex(l => l.Title);
 
             // AuditLog indexes
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => a.UserId);
 
             modelBuilder.Entity<AuditLog>()
-                .HasIndex(a => a.Timestamp);
+                .HasIndex(a => a.Timestamp)
+                .IsDescending();
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => new { a.EntityName, a.EntityId });
 
 
             // This tells EF Core: Automatically filter out listings where IsActive == false in ALL queries. 

@@ -4,6 +4,7 @@ using MVC___MSSQL_Classifieds_Portal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MVC___MSSQL_Classifieds_Portal.Migrations
 {
     [DbContext(typeof(ClassifieldsContext))]
-    partial class ClassifieldsContextModelSnapshot : ModelSnapshot
+    [Migration("20260130032033_UpdateAuditLogModel")]
+    partial class UpdateAuditLogModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

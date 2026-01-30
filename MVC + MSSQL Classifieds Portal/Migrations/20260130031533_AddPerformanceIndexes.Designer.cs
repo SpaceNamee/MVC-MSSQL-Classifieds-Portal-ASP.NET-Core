@@ -4,6 +4,7 @@ using MVC___MSSQL_Classifieds_Portal.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MVC___MSSQL_Classifieds_Portal.Migrations
 {
     [DbContext(typeof(ClassifieldsContext))]
-    partial class ClassifieldsContextModelSnapshot : ModelSnapshot
+    [Migration("20260130031533_AddPerformanceIndexes")]
+    partial class AddPerformanceIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,34 +38,23 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Changes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("EntityId")
+                    b.Property<int>("EntityId")
                         .HasColumnType("int");
-
-                    b.Property<string>("EntityName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Timestamp")
-                        .IsDescending();
+                    b.HasIndex("Timestamp");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("EntityName", "EntityId");
 
                     b.ToTable("AuditLogs");
                 });
@@ -136,15 +128,9 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("Price");
-
-                    b.HasIndex("Title");
-
-                    b.HasIndex("CategoryId", "IsActive");
-
-                    b.HasIndex("UserId", "IsActive");
+                    b.HasIndex("CategoryId", "Price");
 
                     b.ToTable("Listings");
                 });
@@ -196,7 +182,8 @@ namespace MVC___MSSQL_Classifieds_Portal.Migrations
                     b.HasOne("MVC___MSSQL_Classifieds_Portal.Models.User", "User")
                         .WithMany("AuditLogs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

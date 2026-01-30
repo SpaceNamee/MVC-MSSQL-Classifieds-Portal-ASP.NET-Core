@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MVC___MSSQL_Classifieds_Portal.Models;
 using MVC___MSSQL_Classifieds_Portal.Models.ViewModels;
+using MVC___MSSQL_Classifieds_Portal.Services;
 using System.Security.Claims;
 
 
@@ -14,12 +15,14 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
     {
         private readonly ClassifieldsContext _context;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _auditLog;
 
         // Constructor - Dependency Injection gives us the database context
-        public ListingsController(ClassifieldsContext context, IMapper mapper)
+        public ListingsController(ClassifieldsContext context, IMapper mapper, IAuditLogService auditLog)
         {
             _context = context;
             _mapper = mapper;
+            _auditLog = auditLog;
         }
 
         // =================== READ: List all listings with filtering & pagination ===================
@@ -162,6 +165,9 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                 _context.Add(listing);
                 await _context.SaveChangesAsync();
 
+                // Log the creation
+                await _auditLog.LogAsync("CREATE", "Listing", listing.Id, userId, new { listing.Title, listing.Price, listing.CategoryId });
+
                 return RedirectToAction("Index");
             }
 
@@ -225,6 +231,8 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             {
                 try
                 {
+                    var oldValues = new { existingListing.Title, existingListing.Price, existingListing.CategoryId };
+                    
                     existingListing.Title = listing.Title;
                     existingListing.Description = listing.Description;
                     existingListing.Price = listing.Price;
@@ -234,6 +242,11 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
 
                     _context.Update(existingListing);
                     await _context.SaveChangesAsync();
+
+                    // Log the update
+                    var newValues = new { existingListing.Title, existingListing.Price, existingListing.CategoryId };
+                    await _auditLog.LogAsync("UPDATE", "Listing", id, userId, new { Old = oldValues, New = newValues });
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -311,6 +324,10 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             listing.LastUpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            // Log the deletion
+            await _auditLog.LogAsync("DELETE", "Listing", id, userId, new { listing.Title });
+
             return RedirectToAction(nameof(Index));
         }
 
