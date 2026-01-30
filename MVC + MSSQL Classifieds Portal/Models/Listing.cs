@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations; // for [Required]
 using System.ComponentModel.DataAnnotations.Schema; // [Column] (and [Key], [ForeignKey], etc.) comes from this
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 
 namespace MVC___MSSQL_Classifieds_Portal.Models
@@ -42,7 +43,10 @@ namespace MVC___MSSQL_Classifieds_Portal.Models
         public string? ImageUrl { get; set; } // optional image
 
         // Navigation
+        [ValidateNever]
         public Category Category { get; set; } //
+
+        [ValidateNever]
         public User User { get; set; }
     }
 }

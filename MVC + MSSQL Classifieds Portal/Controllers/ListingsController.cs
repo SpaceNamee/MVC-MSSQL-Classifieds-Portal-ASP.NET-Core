@@ -125,18 +125,31 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         [Authorize]
         public IActionResult Create()
         {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+            {
+                return Challenge();
+            }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Username");
 
-            return View();
+            return View(new Listing { UserId = userId });
         }
 
         // =================== CERATE: Save new listing ===================
         // POST: Listings/Create
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Price,CategoryId,UserId,ImageUrl")] Listing listing)
+        public async Task<IActionResult> Create([Bind("Title,Description,Price,CategoryId,ImageUrl")] Listing listing)
         {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+            {
+                return Challenge();
+            }
+            listing.UserId = userId;
+            ModelState.Remove("UserId");
+
             if (ModelState.IsValid)
             {
                 listing.CreatedAt = DateTime.UtcNow;
@@ -149,7 +162,6 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             }
 
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Username", listing.UserId);
 
             return View(listing);
         }
@@ -183,16 +195,22 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Price,CategoryId,UserId,CreatedAt,IsActive,ImageUrl")] Listing listing)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Price,CategoryId,UserId,CreatedAt,IsActive,ImageUrl,LastUpdatedAt")] Listing listing)
         {
             if (id != listing.Id)
             {
                 return NotFound();
             }
 
+            var existingListing = await _context.Listings.FindAsync(id);
+            if (existingListing == null)
+            {
+                return NotFound();
+            }
+
             // Check if current user is the owner
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            if (listing.UserId != userId)
+            if (existingListing.UserId != userId)
             {
                 return Forbid();
             }
@@ -201,14 +219,20 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             {
                 try
                 {
-                    listing.LastUpdatedAt = DateTime.UtcNow;
+                    existingListing.Title = listing.Title;
+                    existingListing.Description = listing.Description;
+                    existingListing.Price = listing.Price;
+                    existingListing.CategoryId = listing.CategoryId;
+                    existingListing.ImageUrl = listing.ImageUrl;
+                    existingListing.LastUpdatedAt = DateTime.UtcNow;
 
-                    _context.Update(listing);
+                    _context.Update(existingListing);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ListingExists(listing.Id))
+                    if (!ListingExists(existingListing.Id))
                     {
                         return NotFound();
                     }
@@ -217,14 +241,11 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                         throw;
                     }
                 }
-
-                return RedirectToAction(nameof(Index));
             }
 
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Username", listing.UserId);
 
-            return View(listing);
+            return View(existingListing);
         }
 
         // ========== DELETE: Show confirmation page ==========
@@ -261,16 +282,26 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         // POST: Listings/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var listing = await _context.Listings.FindAsync(id);
 
-            if (listing != null)
+            if (listing == null)
             {
-                // SOFT DELETE: mark as inactive instead of removing
-                listing.IsActive = false;
-                listing.LastUpdatedAt = DateTime.UtcNow;
+                return NotFound();
             }
+
+            // Check if current user is the owner
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (listing.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            // SOFT DELETE: mark as inactive instead of removing
+            listing.IsActive = false;
+            listing.LastUpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -47,25 +47,57 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ClassifieldsContext>();
 
-    // Ensure database is created
-    context.Database.EnsureCreated();
+    // Ensure database is created and up to date
+    try
+    {
+        context.Database.Migrate();
+    }
+    catch
+    {
+        context.Database.EnsureCreated();
+    }
 
     // ---- Add Users ----
     if (!context.Users.Any()) // prevent duplicate inserts.
     {
+        var aliceHash = BCrypt.Net.BCrypt.HashPassword("Alice123!");
+        var bobHash = BCrypt.Net.BCrypt.HashPassword("Bob123!");
         var user1 = new User
         {
             Username = "alice",
             Email = "alice@example.com",
-            PasswordHash = "hashedpassword1"
+            PasswordHash = aliceHash,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
         var user2 = new User
         {
             Username = "bob",
             Email = "bob@example.com",
-            PasswordHash = "hashedpassword2"
+            PasswordHash = bobHash,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
         context.Users.AddRange(user1, user2);
+        context.SaveChanges();
+    }
+    else
+    {
+        // Fix legacy seed users with non-BCrypt hashes
+        var alice = context.Users.FirstOrDefault(u => u.Username == "alice");
+        if (alice != null && (alice.PasswordHash == null || !alice.PasswordHash.StartsWith("$2")))
+        {
+            alice.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Alice123!");
+            alice.IsActive = true;
+        }
+
+        var bob = context.Users.FirstOrDefault(u => u.Username == "bob");
+        if (bob != null && (bob.PasswordHash == null || !bob.PasswordHash.StartsWith("$2")))
+        {
+            bob.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Bob123!");
+            bob.IsActive = true;
+        }
+
         context.SaveChanges();
     }
 
@@ -244,9 +276,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Authentication middleware MUST come BEFORE Routing and Authorization
-app.UseAuthentication();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

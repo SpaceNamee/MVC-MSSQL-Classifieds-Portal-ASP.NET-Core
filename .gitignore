@@ -1,1 +1,7 @@
 .vs/
+**/bin/
+**/obj/
+*.user
+*.log
+*.cache
+dotnet-installer.exe

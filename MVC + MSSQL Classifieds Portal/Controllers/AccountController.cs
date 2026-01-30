@@ -135,6 +135,13 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // GET: Account/AccessDenied
+        [HttpGet("/Account/AccessDenied")]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
         // Helper method to sign in user with cookie
         private async Task SignInUser(User user)
         {
