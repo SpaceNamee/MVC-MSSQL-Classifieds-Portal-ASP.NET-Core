@@ -241,7 +241,8 @@ using (var scope = app.Services.CreateScope())
             UserId = user.Id,
             Action = "Created",
             EntityId = 1, // the Listing Id
-            Details = "{\"Title\":\"iPhone 14\"}"
+            Details = "{\"Title\":\"iPhone 14\"}",
+            EntityName = "Listing",
         };
         context.AuditLogs.Add(log);
         context.SaveChanges();
