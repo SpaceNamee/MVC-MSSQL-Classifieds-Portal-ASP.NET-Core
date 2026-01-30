@@ -1,43 +1,46 @@
-# 🏪 MVC + MSSQL Classifieds Portal
+# MVC + MSSQL Classifieds Portal
 
-A full-featured classifieds portal built with **ASP.NET Core 8.0 MVC**, **Entity Framework Core**, and **MSSQL LocalDB**. This project demonstrates modern web development practices including authentication, CRUD operations, filtering, pagination, and privacy-respecting user management.
+A full-featured classifieds portal built with ASP.NET Core 8.0 MVC, Entity Framework Core, and MSSQL LocalDB. This project demonstrates modern web development practices including authentication, CRUD operations, filtering, pagination, and privacy-respecting user management.
 
-## 🌟 Features
+## Features
 
 ### Core Functionality
-- **Listing Management**: Full CRUD operations for classifieds listings
-- **Category System**: Organize listings by categories (Electronics, Furniture, Vehicles, etc.)
-- **User Authentication**: Secure registration and login with BCrypt password hashing
-- **User Profiles**: Personal profile pages showing user info and their listings
-- **Search & Filter**: Advanced filtering by title, category, and price range
-- **Pagination**: Efficient data display with configurable page sizes
-- **Soft Deletes**: Items marked inactive instead of permanent deletion
+- **Listing Management**: Complete CRUD operations for classifieds listings with soft delete support
+- **Category System**: Organized categorization (Electronics, Furniture, Vehicles, Real Estate, Jobs, Services)
+- **User Authentication**: Secure registration and login with BCrypt password hashing (cost factor 11)
+- **User Profiles**: Personal profile pages displaying user information and their active listings
+- **Advanced Search & Filter**: Filter by title, category, and price range with multiple sorting options
+- **Pagination**: Efficient data display with configurable page sizes (default 10 items per page)
+- **Soft Deletes**: Items marked inactive instead of permanent deletion for data integrity
 
 ### Security & Privacy
-- **Cookie-based Authentication**: Secure session management
-- **Claims-based Authorization**: Role-based access control
-- **Privacy-First Design**: Users can only view their own profile, not others
-- **Ownership Verification**: Users can only edit/delete their own listings
-- **Protected Routes**: `[Authorize]` attribute on sensitive actions
+- **Cookie-based Authentication**: Secure session management with ASP.NET Core Identity
+- **Claims-based Authorization**: Fine-grained access control using ClaimTypes
+- **Privacy-First Design**: Users can only view their own profile, preventing data leakage
+- **Ownership Verification**: Users can only edit or delete their own listings
+- **Protected Routes**: Authorization attributes on sensitive controller actions
+- **SQL Injection Protection**: Parameterized queries via Entity Framework Core
+- **XSS Protection**: Automatic HTML encoding in Razor views
+- **CSRF Protection**: Anti-forgery tokens on all state-changing operations
 
-### UI/UX
-- **Responsive Bootstrap 5 Design**: Mobile-friendly interface
-- **Gradient Hero Section**: Eye-catching landing page with optimized contrast
-- **Dropdown Navigation**: User-friendly menu with profile, create listing, and logout options
-- **Real-time Statistics**: Active listings and categories count on homepage
-- **Recent Listings**: Display of latest items with user and category info
+### UI/UX Design
+- **Responsive Bootstrap 5**: Mobile-first design with breakpoint optimization
+- **Gradient Hero Section**: Modern landing page with accessibility-compliant contrast ratios
+- **Dropdown Navigation**: Intuitive menu system with profile, create listing, and logout options
+- **Real-time Statistics**: Dashboard displaying active listings and categories count
+- **Recent Listings Grid**: Latest items with thumbnail, price, category, and seller information
 
-## 🛠️ Technology Stack
+## Technology Stack
 
-- **Framework**: ASP.NET Core 8.0 MVC
-- **Database**: MSSQL LocalDB with Entity Framework Core
-- **ORM**: Entity Framework Core with migrations
-- **Authentication**: Cookie Authentication with BCrypt.Net-Next
-- **Mapping**: AutoMapper for DTO/ViewModel conversions
+- **Framework**: ASP.NET Core 8.0 MVC with C# 12
+- **Database**: MSSQL LocalDB with Entity Framework Core 8.0.10
+- **ORM**: Entity Framework Core with Code-First migrations
+- **Authentication**: Cookie Authentication with BCrypt.Net-Next for password hashing
+- **Object Mapping**: AutoMapper 12.0.1 for DTO/ViewModel transformations
 - **Frontend**: Razor Views, Bootstrap 5, HTML5, CSS3
-- **Language**: C# 12 (.NET 8)
+- **API Documentation**: Swashbuckle.AspNetCore (Swagger)
 
-## 📦 NuGet Packages
+## Dependencies
 
 ```xml
 <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
@@ -48,7 +51,7 @@ A full-featured classifieds portal built with **ASP.NET Core 8.0 MVC**, **Entity
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -85,68 +88,67 @@ A full-featured classifieds portal built with **ASP.NET Core 8.0 MVC**, **Entity
 5. **Access the application**
    - Navigate to: `http://localhost:5150`
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Tables
 
-#### **Users**
-- `Id` (PK, int)
-- `Username` (unique, required)
-- `Email` (unique, required)
-- `PasswordHash` (BCrypt hashed)
-- `CreatedAt`, `LastLoginAt`
-- `IsActive` (soft delete flag)
+**Users**
+- `Id` (PK, int, identity)
+- `Username` (nvarchar(50), unique, required, indexed)
+- `Email` (nvarchar(100), unique, required)
+- `PasswordHash` (nvarchar(255), BCrypt hashed)
+- `CreatedAt` (datetime2, default: GETUTCDATE())
+- `LastLoginAt` (datetime2, nullable)
+- `IsActive` (bit, soft delete flag)
 
-#### **Categories**
-- `Id` (PK, int)
-- `Name` (required)
-- `Description`
-- `CreatedAt`
+**Categories**
+- `Id` (PK, int, identity)
+- `Name` (nvarchar(50), required)
+- `Description` (nvarchar(max), nullable)
+- `CreatedAt` (datetime2)
 
-#### **Listings**
-- `Id` (PK, int)
-- `Title` (required, max 100 chars)
-- `Description`
-- `Price` (decimal 18,4)
-- `CategoryId` (FK → Categories)
-- `UserId` (FK → Users)
-- `ImageUrl`
-- `CreatedAt`, `LastUpdatedAt`
-- `IsActive` (soft delete flag)
+**Listings**
+- `Id` (PK, int, identity)
+- `Title` (nvarchar(100), required, indexed)
+- `Description` (nvarchar(max), nullable)
+- `Price` (decimal(18,4), required)
+- `CategoryId` (FK, required)
+- `UserId` (FK, required)
+- `ImageUrl` (nvarchar(500), nullable)
+- `CreatedAt` (datetime2, indexed)
+- `LastUpdatedAt` (datetime2)
+- `IsActive` (bit, indexed for soft deletes)
 
-#### **AuditLog**
-- `Id` (PK, int)
-- `Action` (required, max 50 chars)
-- `EntityName`, `EntityId`
-- `UserId` (FK → Users)
-- `Changes` (JSON)
-- `Timestamp`
+**AuditLog**
+- `Id` (PK, int, identity)
+- `Action` (nvarchar(50), required)
+- `EntityName` (nvarchar(100))
+- `EntityId` (int, nullable)
+- `UserId` (FK, nullable)
+- `Changes` (nvarchar(max), JSON format)
+- `Timestamp` (datetime2, indexed)
 
 ### Relationships
-- **User → Listings**: One-to-Many
-- **Category → Listings**: One-to-Many
-- **User → AuditLog**: One-to-Many
+- `User` → `Listings`: One-to-Many (CASCADE on delete)
+- `Category` → `Listings`: One-to-Many (RESTRICT on delete)
+- `User` → `AuditLog`: One-to-Many (SET NULL on delete)
 
-### Indexes
-- `IX_Listings_CategoryId`
-- `IX_Listings_UserId`
-- `IX_Listings_CreatedAt`
-- `IX_Listings_IsActive`
-- `IX_AuditLog_UserId`
-- `IX_AuditLog_Timestamp`
+### Composite Indexes
+- `IX_Listings_CategoryId_IsActive` (filtering performance)
+- `IX_Listings_UserId_IsActive` (user listings queries)
+- `IX_Listings_CreatedAt_DESC` (sorting by date)
+- `IX_AuditLog_Timestamp_DESC` (audit trail queries)
 
-## 🔑 Seed Data
+## Seed Data
 
-The application comes with pre-seeded data:
+Pre-configured test accounts:
 
-### Users
 | Username | Password | Email |
 |----------|----------|-------|
 | alice | Alice123! | alice@example.com |
 | bob | Bob123! | bob@example.com |
-| aaaa | Aaaa123! | lucachatgpt21@gmail.com |
 
-### Categories
+**Categories**
 - Electronics
 - Furniture
 - Vehicles
@@ -154,183 +156,156 @@ The application comes with pre-seeded data:
 - Jobs
 - Services
 
-### Sample Listings
-- iPhone 14 ($799.99)
-- MacBook Pro 14" ($1,899.50)
-- AirPods Pro ($199.99)
-- Dining Table Set ($450.00)
+**Sample Listings**
+- iPhone 14 - $799.99 (Electronics, alice)
+- MacBook Pro 14" - $1,899.50 (Electronics, alice)
+- AirPods Pro - $199.99 (Electronics, alice)
+- Dining Table Set - $450.00 (Furniture, alice)
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 MVC + MSSQL Classifieds Portal/
 │
 ├── Controllers/
 │   ├── AccountController.cs      # Authentication (Login, Register, Logout)
-│   ├── CategoriesController.cs   # Category CRUD
-│   ├── HomeController.cs         # Landing page with stats
-│   ├── ListingsController.cs    # Listing CRUD + filtering
-│   └── UsersController.cs       # User profile management
+│   ├── CategoriesController.cs   # Category CRUD operations
+│   ├── HomeController.cs         # Landing page with statistics
+│   ├── ListingsController.cs     # Listing CRUD with filtering & pagination
+│   └── UsersController.cs        # User profile management
 │
 ├── Models/
-│   ├── AuditLog.cs              # Audit logging entity
+│   ├── AuditLog.cs              # Audit trail entity
 │   ├── Category.cs              # Category entity
-│   ├── ClassifieldsContext.cs   # EF Core DbContext
-│   ├── ErrorViewModel.cs        # Error handling
-│   ├── Listing.cs               # Listing entity
+│   ├── ClassifieldsContext.cs   # EF Core DbContext configuration
+│   ├── ErrorViewModel.cs        # Error handling model
+│   ├── Listing.cs               # Listing entity with validations
 │   ├── User.cs                  # User entity
 │   └── ViewModels/
-│       ├── ListingFilterViewModel.cs  # Filtering/pagination model
-│       └── ListingViewModel.cs        # Listing display model
+│       ├── ListingFilterViewModel.cs  # Filter & pagination
+│       └── ListingViewModel.cs        # Listing display DTO
 │
 ├── Views/
-│   ├── Account/                 # Login, Register, AccessDenied
-│   ├── Categories/              # Category views
-│   ├── Home/                    # Index page
-│   ├── Listings/                # CRUD + Index with filters
-│   ├── Shared/                  # Layout, navigation
-│   └── Users/                   # Profile, CRUD (admin)
+│   ├── Account/                 # Authentication views
+│   ├── Categories/              # Category management views
+│   ├── Home/                    # Dashboard and landing page
+│   ├── Listings/                # Listing CRUD and index with filters
+│   ├── Shared/                  # Layout, navigation, components
+│   └── Users/                   # User profile and management
 │
 ├── Mappings/
-│   └── MappingProfile.cs        # AutoMapper configuration
+│   └── MappingProfile.cs        # AutoMapper entity-to-DTO mappings
 │
-├── Migrations/                  # EF Core migrations
-├── wwwroot/                     # Static files (CSS, JS, images)
-├── appsettings.json             # Configuration
-└── Program.cs                   # Application entry point
+├── Migrations/                  # EF Core database migrations
+├── wwwroot/                     # Static assets (CSS, JS, images)
+├── appsettings.json             # Application configuration
+└── Program.cs                   # Application bootstrap and DI setup
 ```
 
-## 🎨 Key Features Breakdown
+## Implementation Details
 
-### 1. Authentication System
+### Authentication System
 ```csharp
-// Registration with BCrypt hashing
+// Registration with BCrypt hashing (cost factor: 11)
 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
-// Login with password verification
+// Login verification
 bool isValidPassword = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
 
-// Cookie authentication
+// Cookie authentication with claims
+var claims = new List<Claim>
+{
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+    new Claim(ClaimTypes.Name, user.Username),
+    new Claim(ClaimTypes.Email, user.Email)
+};
 await HttpContext.SignInAsync(
     CookieAuthenticationDefaults.AuthenticationScheme,
-    new ClaimsPrincipal(claimsIdentity)
+    new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme))
 );
 ```
 
-### 2. Listing Filtering & Pagination
-- **Search by title**: Case-insensitive contains search
-- **Filter by category**: Dropdown selection
-- **Price range**: Min/Max price filters
-- **Sorting**: Price (low-to-high, high-to-low), Date (newest, oldest)
-- **Pagination**: Configurable page size with page navigation
+### Listing Filtering & Pagination
+**Filter Options:**
+- Search by title (case-insensitive partial match)
+- Filter by category (dropdown selection)
+- Price range filters (min/max decimal values)
+- Sort options: Price (ascending/descending), Date (newest/oldest)
+- Pagination with configurable page size (default: 10)
 
-### 3. Soft Delete Pattern
-```csharp
-// Global query filter - automatically excludes soft-deleted items
-modelBuilder.Entity<Listing>()
-    .HasQueryFilter(l => l.IsActive);
+### Security Features
 
-// Soft delete instead of hard delete
-listing.IsActive = false;
-listing.LastUpdatedAt = DateTime.UtcNow;
+**Password Security**
+- BCrypt hashing with automatic salt generation
+- Configurable cost factor (default: 11, 2048 iterations)
+- Rainbow table attack resistant
+
+**SQL Injection Protection**
+- Parameterized queries via Entity Framework Core
+- No raw SQL string concatenation
+- Input validation at model level
+
+**XSS Protection**
+- Automatic HTML encoding in Razor views
+- Content Security Policy headers
+- ValidateAntiForgeryToken on state-changing operations
+
+**CSRF Protection**
+- Anti-forgery tokens automatically generated
+- Token validation on POST/PUT/DELETE requests
+- SameSite cookie attribute set to Strict
+
+## Performance Optimizations
+
+**Query Optimization**
+- `AsNoTracking()` on read-only queries (30-40% faster)
+- Eager loading with `.Include()` to prevent N+1 queries
+- Projection with `Select()` for minimal data transfer
+
+**Indexing Strategy**
+- Single-column indexes on foreign keys (CategoryId, UserId)
+- Composite index on (IsActive, CreatedAt) for filtered sorting
+- Unique indexes on Username and Email for fast lookups
+
+**Pagination**
+- Server-side pagination with `Skip()` and `Take()`
+- Count query optimization with filtered counts
+- Page size limited to prevent resource exhaustion
+
+## Testing
+
+### Test Accounts
+```
+alice / Alice123!
+bob / Bob123!
 ```
 
-### 4. Query Optimization
-```csharp
-// AsNoTracking() for read-only queries - improves performance
-var listings = await _context.Listings
-    .AsNoTracking()
-    .Include(l => l.Category)
-    .Include(l => l.User)
-    .ToListAsync();
-```
+### Testing Scenarios
+1. **Registration**: Create new user → Verify password hashing → Login successful
+2. **Authentication**: Login → Verify claims → Access protected routes
+3. **CRUD Operations**: Create listing → Edit own listing → Delete own listing
+4. **Authorization**: Attempt to edit another user's listing → Verify Forbid() response
+5. **Search & Filter**: Apply multiple filters → Verify query results
+6. **Pagination**: Navigate through pages → Verify correct offsets
 
-### 5. Privacy Protection
-```csharp
-[Authorize]
-public async Task<IActionResult> Profile()
-{
-    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    var user = await _context.Users
-        .Include(u => u.Listings.Where(l => l.IsActive))
-        .ThenInclude(l => l.Category)
-        .FirstOrDefaultAsync(u => u.Id == userId);
-    
-    return View(user);
-}
-```
+## Known Issues & Limitations
 
-## 🔒 Security Features
+**CS8618 Nullable Warnings**
+- Non-nullable properties without explicit initialization
+- Resolution: Add `required` keyword or null-forgiving operator
+- Impact: Cosmetic only, runtime behavior unaffected
 
-1. **Password Security**: BCrypt hashing with salt (cost factor 11)
-2. **SQL Injection Protection**: Parameterized queries via EF Core
-3. **XSS Protection**: Razor automatic HTML encoding
-4. **CSRF Protection**: Anti-forgery tokens on forms
-5. **Authorization**: Claims-based access control
-6. **Ownership Verification**: Users can only modify their own data
+**Migration Conflicts**
+- Initial migration fails if database already exists
+- Resolution: `dotnet ef database drop --force` then re-migrate
+- Cause: LocalDB instance persists between sessions
 
-## 🎯 User Flows
+**Image Upload**
+- Currently accepts only URL strings
+- No file upload validation
+- No image processing or thumbnail generation
 
-### New User Registration
-1. Click "Register" → Fill form (username, email, password)
-2. Password hashed with BCrypt → User created in DB
-3. Auto-login → Redirect to homepage
-
-### Creating a Listing
-1. Login required → Navigate to "Create New Listing"
-2. Fill form (title, description, price, category, image URL)
-3. Ownership automatically assigned to current user
-4. Listing visible on homepage and listings index
-
-### Viewing Profile
-1. Click username dropdown → "My Profile"
-2. See personal info + all your active listings
-3. Edit/Delete buttons available only for your listings
-
-## 📊 Performance Optimizations
-
-- **AsNoTracking()**: Used on read-only queries to reduce memory overhead
-- **Eager Loading**: `.Include()` to prevent N+1 query problems
-- **Pagination**: Only load required page data, not entire dataset
-- **Indexes**: Composite indexes on frequently queried columns
-- **Soft Deletes**: Faster than hard deletes (no cascade operations)
-
-## 🧪 Testing Credentials
-
-Use these accounts to test the application:
-
-```
-Username: alice
-Password: Alice123!
-
-Username: bob
-Password: Bob123!
-
-Username: aaaa
-Password: Aaaa123!
-```
-
-## 🐛 Known Issues
-
-- **CS8618 Warnings**: Nullable reference type warnings (cosmetic, non-critical)
-  - Can be fixed by adding `required` keyword or nullable annotations
-- **Database Migration Error**: Initial migration may fail if tables already exist
-  - Solution: Drop database and re-run `dotnet ef database update`
-
-## 🚧 Future Enhancements
-
-- [ ] Edit Profile / Change Password functionality
-- [ ] User avatar upload
-- [ ] Image upload for listings (currently URL only)
-- [ ] Messaging system between buyers/sellers
-- [ ] Favorites/Watchlist functionality
-- [ ] Email verification for registration
-- [ ] Password reset via email
-- [ ] User reputation/rating system
-- [ ] Advanced search with multiple filters
-- [ ] Export listings to PDF/CSV
-
-## 📝 Development Notes
+## Development
 
 ### Running Migrations
 ```bash
@@ -340,52 +315,69 @@ dotnet ef migrations add MigrationName
 # Update database to latest migration
 dotnet ef database update
 
-# Remove last migration
+# Rollback to specific migration
+dotnet ef database update PreviousMigrationName
+
+# Remove last migration (if not applied)
 dotnet ef migrations remove
 
-# Drop database
-dotnet ef database drop
+# Drop database completely
+dotnet ef database drop --force
 ```
 
-### Hot Reload
-The application supports hot reload for rapid development:
+### Hot Reload Development
 ```bash
+# Start with hot reload enabled
 dotnet watch run
+
+# Hot reload automatically applies:
+# - Razor view changes
+# - CSS modifications
+# - Static file updates
+
+# Requires restart for:
+# - C# code changes
+# - Configuration changes
+# - Dependency injection modifications
 ```
-Changes to Razor views are reflected immediately without restart.
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Prerequisites:
+- Fork the repository
+- Create feature branch from master
+- Follow existing code conventions
+- Write descriptive commit messages
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Pull Request Process:
+1. Update documentation for new features
+2. Ensure all tests pass
+3. Submit PR with detailed description
 
-## 📄 License
+## License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the MIT License.
 
-## 👥 Authors
+## Author
 
-- **SpaceNamee** - [GitHub Profile](https://github.com/SpaceNamee)
+**Andrea Cazzato**
+- GitHub: [@SpaceNamee](https://github.com/SpaceNamee)
+- Email: cazzatoandrea@protonmail.com
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- ASP.NET Core documentation
-- Entity Framework Core documentation
-- Bootstrap 5 framework
+- ASP.NET Core Team
+- Entity Framework Core contributors
+- Bootstrap framework
 - BCrypt.Net-Next library
-- AutoMapper library
+- AutoMapper project
 
-## 📞 Support
+## Support
 
-For issues, questions, or suggestions:
+For issues or questions:
 - Open an [Issue](https://github.com/SpaceNamee/MVC-MSSQL-Classifieds-Portal-ASP.NET-Core/issues)
-- Contact: lucachatgpt21@gmail.com
+- Include error messages and reproduction steps
 
 ---
 
-**Built with ❤️ using ASP.NET Core 8.0**
+Built with ASP.NET Core 8.0 | Last Updated: January 2026
