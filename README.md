@@ -513,12 +513,6 @@ Pull Request Process:
 
 This project is open source and available under the MIT License.
 
-## Author
-
-**Andrea Cazzato**
-- GitHub: [@SpaceNamee](https://github.com/SpaceNamee)
-- Email: cazzatoandrea@protonmail.com
-
 ## Acknowledgments
 
 - ASP.NET Core Team
