@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MVC___MSSQL_Classifieds_Portal.Models;
+using System.Security.Claims;
 
 namespace MVC___MSSQL_Classifieds_Portal.Controllers
 {
@@ -13,10 +15,30 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             _context = context;
         }
 
+        // =================== USER PROFILE: Personal user page ===================
+        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var users = await _context.Users.Include(u => u.Listings).ToListAsync();
-            return View(users);
+            // Redirect to personal profile instead of showing all users
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Profile()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+            {
+                return Challenge();
+            }
+
+            var user = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Listings).ThenInclude(l => l.Category)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return NotFound();
+            return View(user);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -24,6 +46,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             if (id == null) return NotFound();
 
             var user = await _context.Users
+                .AsNoTracking()
                 .Include(u => u.Listings).ThenInclude(l => l.Category)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -47,9 +70,10 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             {
                 user.CreatedAt = DateTime.UtcNow;
                 user.IsActive = true;
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Profile));
             }
             return View(user);
         }
@@ -76,7 +100,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             {
                 _context.Update(user);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Profile));
             }
             return View(user);
         }
@@ -102,7 +126,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                     listing.IsActive = false;
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Profile));
         }
     }
 }

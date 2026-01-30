@@ -1,0 +1,126 @@
+@model MVC___MSSQL_Classifieds_Portal.Models.User
+
+@{
+    ViewData["Title"] = $"My Profile - {Model.Username}";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1>My Profile</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Account Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Username</dt>
+                    <dd class="col-sm-9"><strong>@Model.Username</strong></dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@Model.Email</dd>
+
+                    <dt class="col-sm-3">Member Since</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-3">Last Login</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.LastLoginAt.HasValue)
+                        {
+                            @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Never</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Listings (@(Model.Listings?.Count() ?? 0))</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Listings != null && Model.Listings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var listing in Model.Listings.OrderByDescending(l => l.CreatedAt))
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Listings" asp-action="Details" asp-route-id="@listing.Id">
+                                                @listing.Title
+                                            </a>
+                                        </td>
+                                        <td>@listing.Category?.Name</td>
+                                        <td>€@listing.Price.ToString("F2")</td>
+                                        <td>
+                                            @if (listing.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>@listing.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <a asp-controller="Listings" asp-action="Edit" asp-route-id="@listing.Id" class="btn btn-sm btn-warning">Edit</a>
+                                            <a asp-controller="Listings" asp-action="Delete" asp-route-id="@listing.Id" class="btn btn-sm btn-danger">Delete</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <p class="mb-0">You haven't created any listings yet.</p>
+                        <a asp-controller="Listings" asp-action="Create" class="btn btn-primary btn-sm mt-2">Create Your First Listing</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Account Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="#" class="btn btn-warning w-100 mb-2" disabled title="Coming soon">Edit Profile</a>
+                <a href="#" class="btn btn-danger w-100" disabled title="Coming soon">Change Password</a>
+            </div>
+        </div>
+    </div>
+</div>

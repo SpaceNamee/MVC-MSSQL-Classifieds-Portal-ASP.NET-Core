@@ -35,7 +35,9 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             const int pageSize = 10;
             
             // Start with base query - Include() loads related data (Category, User) - "Eager Loading"
+            // AsNoTracking() improves performance for read-only operations
             IQueryable<Listing> query = _context.Listings
+                .AsNoTracking()
                 .Where(l => l.IsActive)
                 .Include(l => l.Category)
                 .Include(l => l.User);
@@ -79,7 +81,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                 .ToListAsync();
 
             var viewModels = _mapper.Map<List<ListingViewModel>>(listings);
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
 
             var filterViewModel = new ListingFilterViewModel
             {
@@ -108,6 +110,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             }
 
             var listring = await _context.Listings
+                .AsNoTracking()
                 .Include(l => l.Category)
                 .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -123,14 +126,15 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
         // =================== CREATE: Show empty form ===================
         // GET: Listings/Create
         [Authorize]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)
             {
                 return Challenge();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
 
             return View(new Listing { UserId = userId });
         }
@@ -161,7 +165,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.AsNoTracking(), "Id", "Name", listing.CategoryId);
 
             return View(listing);
         }
@@ -184,8 +188,10 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                 return Forbid();
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Username", listing.UserId);
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            var users = await _context.Users.AsNoTracking().ToListAsync();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", listing.CategoryId);
+            ViewData["UserId"] = new SelectList(users, "Id", "Username", listing.UserId);
 
             return View(listing);
         }
@@ -243,7 +249,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
                 }
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", listing.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories.AsNoTracking(), "Id", "Name", listing.CategoryId);
 
             return View(existingListing);
         }
@@ -259,6 +265,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
             }
 
             var listing = await _context.Listings
+                .AsNoTracking()
                 .Include(l => l.Category)
                 .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -309,7 +316,7 @@ namespace MVC___MSSQL_Classifieds_Portal.Controllers
 
         private bool ListingExists(int id)
         {
-            return _context.Listings.Any(e => e.Id == id);
+            return _context.Listings.AsNoTracking().Any(e => e.Id == id);
         }
     }
 }

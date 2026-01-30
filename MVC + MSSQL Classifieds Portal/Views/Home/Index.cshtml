@@ -6,45 +6,41 @@
 
 <div class="container">
     <!-- Hero Section -->
-    <div class="text-center py-5 bg-light rounded-3 mb-4">
-        <h1 class="display-4">🏪 Classifieds Portal</h1>
-        <p class="lead text-muted">Buy and sell anything - Electronics, Furniture, and more!</p>
-        <a asp-controller="Listings" asp-action="Create" class="btn btn-primary btn-lg">
-            + Post New Listing
-        </a>
+    <div class="text-center py-5 rounded-3 mb-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%); color: white;">
+        <h1 class="display-4 fw-bold mb-3">🏪 Classifieds Portal</h1>
+        <p class="lead mb-4" style="font-size: 1.2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">Buy and sell anything - Electronics, Furniture, and more!</p>
+        <div>
+            <a asp-controller="Listings" asp-action="Create" class="btn btn-light btn-lg me-2">
+                ✨ Post New Listing
+            </a>
+            <a asp-controller="Listings" asp-action="Index" class="btn btn-outline-light btn-lg">
+                🔍 Browse Listings
+            </a>
+        </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <h2 class="card-title text-primary">@Model.TotalListings</h2>
-                    <p class="card-text">Active Listings</p>
-                    <a asp-controller="Listings" asp-action="Index" class="btn btn-outline-primary btn-sm">
-                        View All
+        <div class="col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 text-primary mb-2">@Model.TotalListings</div>
+                    <h5 class="card-title mb-3">Active Listings</h5>
+                    <p class="text-muted mb-3">Discover amazing items for sale</p>
+                    <a asp-controller="Listings" asp-action="Index" class="btn btn-primary">
+                        Browse All Listings →
                     </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center border-success">
-                <div class="card-body">
-                    <h2 class="card-title text-success">@Model.TotalCategories</h2>
-                    <p class="card-text">Categories</p>
-                    <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-success btn-sm">
-                        Browse
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center border-info">
-                <div class="card-body">
-                    <h2 class="card-title text-info">@Model.TotalUsers</h2>
-                    <p class="card-text">Registered Users</p>
-                    <a asp-controller="Users" asp-action="Index" class="btn btn-outline-info btn-sm">
-                        View All
+        <div class="col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 text-success mb-2">@Model.TotalCategories</div>
+                    <h5 class="card-title mb-3">Categories</h5>
+                    <p class="text-muted mb-3">Explore items by category</p>
+                    <a asp-controller="Categories" asp-action="Index" class="btn btn-success">
+                        Browse Categories →
                     </a>
                 </div>
             </div>

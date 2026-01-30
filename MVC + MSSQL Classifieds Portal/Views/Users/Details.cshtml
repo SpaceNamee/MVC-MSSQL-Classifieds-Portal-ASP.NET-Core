@@ -1,0 +1,119 @@
+@model MVC___MSSQL_Classifieds_Portal.Models.User
+
+@{
+    ViewData["Title"] = $"User: {Model.Username}";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1>@Model.Username</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">User Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">ID</dt>
+                    <dd class="col-sm-9">@Model.Id</dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@Model.Email</dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Joined</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-3">Last Login</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.LastLoginAt.HasValue)
+                        {
+                            @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Never</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Listings by @Model.Username (@(Model.Listings?.Count() ?? 0))</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Listings != null && Model.Listings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var listing in Model.Listings)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Listings" asp-action="Details" asp-route-id="@listing.Id">
+                                                @listing.Title
+                                            </a>
+                                        </td>
+                                        <td>@listing.Category?.Name</td>
+                                        <td>€@listing.Price.ToString("F2")</td>
+                                        <td>
+                                            @if (listing.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>@listing.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">This user has no listings yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning w-100 mb-2">Edit User</a>
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger w-100 mb-2">Delete User</a>
+                <a asp-action="Index" class="btn btn-secondary w-100">Back to Users</a>
+            </div>
+        </div>
+    </div>
+</div>

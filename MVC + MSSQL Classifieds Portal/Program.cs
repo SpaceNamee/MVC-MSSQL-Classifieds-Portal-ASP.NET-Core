@@ -84,14 +84,14 @@ using (var scope = app.Services.CreateScope())
     else
     {
         // Fix legacy seed users with non-BCrypt hashes
-        var alice = context.Users.FirstOrDefault(u => u.Username == "alice");
+        var alice = context.Users.AsNoTracking().FirstOrDefault(u => u.Username == "alice");
         if (alice != null && (alice.PasswordHash == null || !alice.PasswordHash.StartsWith("$2")))
         {
             alice.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Alice123!");
             alice.IsActive = true;
         }
 
-        var bob = context.Users.FirstOrDefault(u => u.Username == "bob");
+        var bob = context.Users.AsNoTracking().FirstOrDefault(u => u.Username == "bob");
         if (bob != null && (bob.PasswordHash == null || !bob.PasswordHash.StartsWith("$2")))
         {
             bob.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Bob123!");
@@ -113,10 +113,10 @@ using (var scope = app.Services.CreateScope())
     // ---- Add Listings ----
     if (!context.Listings.Any())
     {
-        var alice = context.Users.First(u => u.Username == "alice");
-        var bob = context.Users.First(u => u.Username == "bob");
-        var electronics = context.Categories.First(c => c.Name == "Electronics");
-        var furniture = context.Categories.First(c => c.Name == "Furniture");
+        var alice = context.Users.AsNoTracking().First(u => u.Username == "alice");
+        var bob = context.Users.AsNoTracking().First(u => u.Username == "bob");
+        var electronics = context.Categories.AsNoTracking().First(c => c.Name == "Electronics");
+        var furniture = context.Categories.AsNoTracking().First(c => c.Name == "Furniture");
 
         var listings = new List<Listing>
         {
