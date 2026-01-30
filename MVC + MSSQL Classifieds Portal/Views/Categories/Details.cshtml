@@ -1,0 +1,71 @@
+﻿@model MVC___MSSQL_Classifieds_Portal.Models.Category
+
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+<h1>@Model.Name</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">@(Model.Description ?? "No description")</dd>
+            
+            <dt class="col-sm-3">Created</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToString("MMMM dd, yyyy")</dd>
+            
+            <dt class="col-sm-3">Total Listings</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-primary">@Model.Listings.Count</span>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Listings in this Category</h4>
+
+@if (Model.Listings != null && Model.Listings.Any())
+{
+    <div class="row">
+        @foreach (var listing in Model.Listings)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    @if (!string.IsNullOrEmpty(listing.ImageUrl))
+                    {
+                        <img src="@listing.ImageUrl" class="card-img-top" alt="@listing.Title" 
+                             style="height: 150px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
+                             style="height: 150px;">
+                            <span class="text-white">No Image</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h6 class="card-title">@listing.Title</h6>
+                        <p class="card-text text-success fw-bold">@listing.Price.ToString("C")</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">By @listing.User?.Username</small>
+                        <a asp-controller="Listings" asp-action="Details" asp-route-id="@listing.Id" 
+                           class="btn btn-sm btn-primary float-end">View</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <p class="mb-0">No listings in this category yet.</p>
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Category</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to Categories</a>
+</div>
