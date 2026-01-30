@@ -12,6 +12,8 @@ namespace MVC___MSSQL_Classifieds_Portal.Models.ViewModels
         public DateTime CreatedAt { get; set; }
         public Category Category { get; set; }
         public User User { get; set; }
+        public string? ImageUrl { get; set; }
+        public int UserId { get; set; }
     }
 
     public class ListingCreateViewModel

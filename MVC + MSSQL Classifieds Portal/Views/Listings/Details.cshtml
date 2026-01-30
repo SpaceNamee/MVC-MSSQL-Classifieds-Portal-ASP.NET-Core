@@ -1,38 +1,60 @@
 ﻿@model MVC___MSSQL_Classifieds_Portal.Models.Listing
 
 @{
-    ViewData["Title"] = "Listing Details";
+    ViewData["Title"] = Model.Title;
 }
 
-<h1>@Model.Title</h1>
-
-<div class="card">
-    <div class="card-body">
-        @if (!string.IsNullOrEmpty(Model.ImageUrl))
-        {
-            <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid mb-3" style="max-height: 300px;" />
-        }
-        
-        <dl class="row">
-            <dt class="col-sm-3">Price</dt>
-            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Title" class="card-img-top" style="max-height: 400px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted" style="height: 300px; font-size: 5rem;">
+                    📦
+                </div>
+            }
             
-            <dt class="col-sm-3">Category</dt>
-            <dd class="col-sm-9">@Model.Category?.Name</dd>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h2 class="mb-0">@Model.Title</h2>
+                    <span class="badge bg-secondary fs-6">@Model.Category?.Name</span>
+                </div>
+                
+                <div class="alert alert-success d-inline-block mb-4">
+                    <h3 class="mb-0">@Model.Price.ToString("C")</h3>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>Description</h5>
+                    <p class="text-muted">@(Model.Description ?? "No description provided.")</p>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <strong>👤 Owner:</strong> @Model.User?.Username
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>📅 Posted:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy")
+                    </div>
+                </div>
+            </div>
             
-            <dt class="col-sm-3">Description</dt>
-            <dd class="col-sm-9">@(Model.Description ?? "No description")</dd>
-            
-            <dt class="col-sm-3">Owner</dt>
-            <dd class="col-sm-9">@Model.User?.Username</dd>
-            
-            <dt class="col-sm-3">Posted</dt>
-            <dd class="col-sm-9">@Model.CreatedAt.ToString("MMMM dd, yyyy")</dd>
-        </dl>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    @if (User.Identity?.IsAuthenticated == true && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.UserId.ToString())
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning flex-fill">✏️ Edit</a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger flex-fill">🗑️ Delete</a>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary flex-fill">← Back to Listings</a>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

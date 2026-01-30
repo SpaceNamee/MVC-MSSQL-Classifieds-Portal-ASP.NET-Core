@@ -4,16 +4,28 @@
     ViewData["Title"] = "Listings";
 }
 
-<h1>Listings</h1>
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">+ Create New Listing</a>
-</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">🛍️ All Listings</h1>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="Create" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> Create New Listing
+        </a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">
+            Login to Post
+        </a>
+    }
+</div>
 
 <!-- Filter Form -->
-<div class="card mb-4">
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">🔍 Search & Filter</h5>
+    </div>
     <div class="card-body">
-        <h5 class="card-title">Search & Filter</h5>
         <form method="get" asp-action="Index" class="row g-3">
             <div class="col-md-3">
                 <input type="text" name="searchTitle" class="form-control" placeholder="Search by title"
@@ -67,49 +79,69 @@
 </div>
 
 <!-- Results Summary -->
-<div class="alert alert-info">
-    Found <strong>@Model.TotalListings</strong> listing(s)
+<div class="alert alert-info d-flex justify-content-between align-items-center">
+    <span>Found <strong>@Model.TotalListings</strong> listing(s)</span>
+    <span class="badge bg-primary">Page @Model.CurrentPage of @Model.TotalPages</span>
 </div>
 
-<!-- Listings Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Owner</th>
-            <th>Created</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Listings.Any())
+<!-- Listings Grid View -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+    @if (Model.Listings.Any())
+    {
+        @foreach (var item in Model.Listings)
         {
-            @foreach (var item in Model.Listings)
-            {
-                <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                    <td>@item.Price.ToString("C")</td>
-                    <td>@Html.DisplayFor(modelItem => item.Category.Name)</td>
-                    <td>@Html.DisplayFor(modelItem => item.User.Username)</td>
-                    <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-                    </td>
-                </tr>
-            }
+            <div class="col">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Title" 
+                             style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted" 
+                             style="height: 200px; font-size: 3rem;">
+                            📦
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="@item.Title">@item.Title</h5>
+                        <p class="card-text text-muted small mb-2">
+                            <span class="badge bg-secondary">@item.Category.Name</span>
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="h4 text-success mb-0">@item.Price.ToString("C")</span>
+                        </div>
+                        <p class="card-text small text-muted">
+                            <i class="bi bi-person"></i> @item.User.Username<br>
+                            <i class="bi bi-calendar"></i> @item.CreatedAt.ToString("MMM dd, yyyy")
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary flex-fill">View</a>
+                            @if (User.Identity?.IsAuthenticated == true && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == item.UserId.ToString())
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-        else
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">No listings found</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div style="font-size: 5rem; opacity: 0.3;">📭</div>
+                <h3 class="text-muted">No listings found</h3>
+                <p class="text-muted">Try adjusting your search filters</p>
+            </div>
+        </div>
+    }
+</div>
 
 <!-- Pagination Links -->
 @if (Model.TotalPages > 1)

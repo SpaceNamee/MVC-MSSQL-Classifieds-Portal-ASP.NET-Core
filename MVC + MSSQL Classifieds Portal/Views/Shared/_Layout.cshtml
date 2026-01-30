@@ -72,9 +72,17 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - MVC___MSSQL_Classifieds_Portal - <a asp-area="" asp-controller="Home"></a>
+    <footer class="border-top footer text-muted mt-5">
+        <div class="container py-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2025 Classifieds Portal - Built with ASP.NET Core 8.0</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a asp-controller="Home" asp-action="Privacy" class="text-muted text-decoration-none me-3">Privacy</a>
+                    <a href="https://github.com/SpaceNamee" class="text-muted text-decoration-none" target="_blank">GitHub</a>
+                </div>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
